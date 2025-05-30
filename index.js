@@ -14,14 +14,14 @@ async function handleRequest(request) {
   let htmlIndex = `${folder}index.html`;
   const jsonIndex = `${folder}project.json`;
 
-  // ----- Case 1: folder/project.json -----
-  let res = await fetch(new URL(jsonIndex, request.url));
-  if (res.ok) {
-    const project = await res.json();
+  // ----- Case 1: check existence of folder/project.json via HEAD -----
+  let headRes = await fetch(new URL(jsonIndex, request.url), { method: 'HEAD' });
+  if (headRes.ok) {
+    // Return only the link to the JSON
     return jsonResponse({
-      type:        'icc',
+      type:        'icc_link',
       html_path:   htmlIndex,
-      project,
+      project:     jsonIndex,
       folder_path: folder
     });
   }
@@ -36,14 +36,13 @@ async function handleRequest(request) {
     folder = segments.length ? segments.join('/') + '/' : '';
     htmlIndex = htmlCandidate;
 
-    // Retry project.json in the updated folder
-    const projRes = await fetch(new URL(`${folder}project.json`, request.url));
-    if (projRes.ok) {
-      const project = await projRes.json();
+    // Check existence of updated folder/project.json via HEAD
+    let projHead = await fetch(new URL(`${folder}project.json`, request.url), { method: 'HEAD' });
+    if (projHead.ok) {
       return jsonResponse({
-        type:        'icc',
+        type:        'icc_link',
         html_path:   htmlIndex,
-        project,
+        project:     `${folder}project.json`,
         folder_path: folder
       });
     }
@@ -61,11 +60,14 @@ async function handleRequest(request) {
       if (jsRes.ok) {
         const jsText = await jsRes.text();
 
-        // Try extracting JSON or JSON path from JS
+        // Case 3: try extracting JSON or JSON path from JS
         const extracted = await getProjectFromAppJs(jsText);
         if (extracted != null) {
+          // If extracted is an object, return it directly; if string, it's a filename
+          // For embedded JSON, keep type 'icc'
+          const respType = typeof extracted === 'object' ? 'icc' : 'icc_link';
           return jsonResponse({
-            type:        'icc',
+            type:        respType,
             html_path:   htmlIndex,
             project:     extracted,
             folder_path: folder
@@ -81,13 +83,13 @@ async function handleRequest(request) {
         const otherMatch = jsText.match(/([A-Za-z0-9_\-]+\.json)/);
         if (otherMatch) {
           const altJson = otherMatch[1];
-          const altRes  = await fetch(new URL(`${folder}${altJson}`, request.url));
-          if (altRes.ok) {
-            const altText = await altRes.text();
+          // Check existence of altJson via HEAD
+          const altHead = await fetch(new URL(`${folder}${altJson}`, request.url), { method: 'HEAD' });
+          if (altHead.ok) {
             return jsonResponse({
-              type:        'icc',
+              type:        'icc_link',
               html_path:   htmlIndex,
-              project:     altText,
+              project:     `${folder}${altJson}`,
               folder_path: folder
             });
           }
