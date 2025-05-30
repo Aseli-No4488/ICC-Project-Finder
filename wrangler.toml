@@ -1,0 +1,3 @@
+name = "icc-project-finder"
+main = "index.js"
+compatibility_date = "2025-05-30"
