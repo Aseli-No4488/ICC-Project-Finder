@@ -33,11 +33,6 @@ async function handleRequest(request) {
     htmlCandidate = `${trimmed}.html`;
     let htmlRes = await fetch(new URL(htmlCandidate, request.url), { method: 'HEAD' });
     if (htmlRes.ok) {
-      // Ensure the worker didn't return index.html as a fallback
-      // by comparing the request path and the response URL path
-      const fetchedPath = new URL(htmlRes.url).pathname;
-      const expectedPath = new URL(htmlCandidate, request.url).pathname;
-      if (fetchedPath === expectedPath) {
         // Update folder and htmlIndex
         const segments = trimmed.split('/');
         segments.pop();
@@ -53,7 +48,6 @@ async function handleRequest(request) {
             project:     `${folder}project.json`,
             folder_path: folder
           });
-        }
       }
     }
   }
