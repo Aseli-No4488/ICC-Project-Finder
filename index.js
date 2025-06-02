@@ -27,24 +27,34 @@ async function handleRequest(request) {
   }
 
   // ----- Case 2: user passed a filename -----
-  const htmlCandidate = `${trimmed}.html`;
-  let htmlRes = await fetch(new URL(htmlCandidate, request.url));
-  if (htmlRes.ok) {
-    // Update folder and htmlIndex
-    const segments = trimmed.split('/');
-    segments.pop();
-    folder = segments.length ? segments.join('/') + '/' : '';
-    htmlIndex = htmlCandidate;
+  // Try trimmed + '.html' only if trimmed does not already end with '.html'
+  let htmlCandidate = '';
+  if (!trimmed.endsWith('.html')) {
+    htmlCandidate = `${trimmed}.html`;
+    let htmlRes = await fetch(new URL(htmlCandidate, request.url), { method: 'HEAD' });
+    if (htmlRes.ok) {
+      // Ensure the worker didn't return index.html as a fallback
+      // by comparing the request path and the response URL path
+      const fetchedPath = new URL(htmlRes.url).pathname;
+      const expectedPath = new URL(htmlCandidate, request.url).pathname;
+      if (fetchedPath === expectedPath) {
+        // Update folder and htmlIndex
+        const segments = trimmed.split('/');
+        segments.pop();
+        folder = segments.length ? segments.join('/') + '/' : '';
+        htmlIndex = htmlCandidate;
 
-    // Check existence of updated folder/project.json via HEAD
-    let projHead = await fetch(new URL(`${folder}project.json`, request.url), { method: 'HEAD' });
-    if (projHead.ok) {
-      return jsonResponse({
-        type:        'icc_link',
-        html_path:   htmlIndex,
-        project:     `${folder}project.json`,
-        folder_path: folder
-      });
+        // Check existence of updated folder/project.json via HEAD
+        let projHead = await fetch(new URL(`${folder}project.json`, request.url), { method: 'HEAD' });
+        if (projHead.ok) {
+          return jsonResponse({
+            type:        'icc_link',
+            html_path:   htmlIndex,
+            project:     `${folder}project.json`,
+            folder_path: folder
+          });
+        }
+      }
     }
   }
 
