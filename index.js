@@ -86,7 +86,7 @@ async function handleRequest(request) {
 
         // Case 4a: bundle mentions 'project.json' → 404
         if (jsText.includes('project.json')) {
-          return new Response('Not found', { status: 404, reason: "project.json seems being required but not exists.", html_path: htmlIndex, folder_path: folder });
+          return jsonResponse({ reason: "project.json seems being required but not exists.", html_path: htmlIndex, folder_path: folder }, 404);
         }
 
         // Case 4b: find any other .json filename
@@ -109,15 +109,15 @@ async function handleRequest(request) {
   }
 
   // ----- Fallback: not found -----
-  return new Response('Not found', { status: 404, reason: "Unknown", html_path: htmlIndex, folder_path: folder });
+  return jsonResponse({ reason: "Unknown", html_path: htmlIndex, folder_path: folder }, 404);
 }
 
 /**
  * Utility to send JSON responses
  */
-function jsonResponse(body) {
+function jsonResponse(body, status=200) {
   return new Response(JSON.stringify(body), {
-    status: 200,
+    status: status,
     headers: { 'Content-Type': 'application/json' }
   });
 }
