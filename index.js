@@ -88,14 +88,15 @@ async function handleRequest(request) {
         if (otherMatch) {
           const altJson = otherMatch[1];
           // Check existence of altJson via HEAD
-          const altProject = `${folder}{altJson}`;
-          const altHead = await fetch(new URL(altProject, request.url), { method: 'HEAD' });
+
+          const altHead = await fetch(new URL(folder+altJson, request.url), { method: 'HEAD' });
           if (altHead.ok) {
             return jsonResponse({
               type:        'icc_link',
               html_path:   htmlIndex,
-              project:     altProject,
-              folder_path: folder
+              project:     folder + altJson,
+              folder_path: folder,
+              message: 'Alternative json name detected.'
             });
           }
         }
