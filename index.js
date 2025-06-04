@@ -73,8 +73,9 @@ async function handleRequest(request) {
           return jsonResponse({
             type:        respType,
             html_path:   htmlIndex,
-            project:     extracted,
-            folder_path: folder
+            project:     (resType == 'icc_link' ? folder : '') + extracted,
+            folder_path: folder,
+            message: 'Extracted project.'
           });
         }
 
