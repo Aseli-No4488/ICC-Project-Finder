@@ -77,7 +77,7 @@ async function handleRequest(request) {
             html_path:   htmlIndex,
             project:     (isExtracted ? '' : folder) + extracted,
             folder_path: folder,
-            message: 'Extracted project.'
+            message: 'Extracted project from app.js'
           });
         }
 
@@ -86,23 +86,6 @@ async function handleRequest(request) {
           return jsonResponse({ reason: "project.json seems being required but not exists.", html_path: htmlIndex, folder_path: folder }, 404);
         }
 
-        // Case 4b: find any other .json filename
-        const otherMatch = jsText.match(/([A-Za-z0-9_\-]+\.json)/);
-        if (otherMatch) {
-          const altJson = otherMatch[1];
-          // Check existence of altJson via HEAD
-
-          const altHead = await fetch(new URL(folder+altJson, request.url), { method: 'HEAD' });
-          if (altHead.ok) {
-            return jsonResponse({
-              type:        'icc_link',
-              html_path:   htmlIndex,
-              project:     folder + altJson,
-              folder_path: folder,
-              message: 'Alternative json name detected.'
-            });
-          }
-        }
       }
     }
   }
