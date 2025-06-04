@@ -69,11 +69,13 @@ async function handleRequest(request) {
         if (extracted != null) {
           // If extracted is an object, return it directly; if string, it's a filename
           // For embedded JSON, keep type 'icc'
-          const respType = typeof extracted === 'object' ? 'icc' : 'icc_link';
+          const isExtracted = typeof extracted === 'object';
+
+          const respType = isExtracted ? 'icc' : 'icc_link';
           return jsonResponse({
             type:        respType,
             html_path:   htmlIndex,
-            project:     (resType == 'icc_link' ? folder : '') + extracted,
+            project:     (isExtracted ? '' : folder) + extracted,
             folder_path: folder,
             message: 'Extracted project.'
           });
