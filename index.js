@@ -7,7 +7,7 @@ async function handleRequest(request) {
   const rawPath = url.searchParams.get("path") || "";
 
   // Normalize path: strip any leading/trailing slashes
-  const trimmed = rawPath.replace(/^\/+|\/+$/g, "");
+  let trimmed = rawPath.replace(/^\/+|\/+$/g, "");
 
   // If the path is empty, return a 404
   if (!trimmed) {
