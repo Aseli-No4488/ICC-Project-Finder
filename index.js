@@ -141,7 +141,7 @@ function jsonResponse(body, status = 200) {
  * Returns parsed object or filename string, or null
  */
 function extractJsonFromAppJs(target) {
-  const startToken = '{"isEditModeOnAll":';
+  const startToken = '"isEditModeOnAll":';
   const start = target.indexOf(startToken);
   if (start !== -1) {
     let depth = 0,
@@ -151,7 +151,7 @@ function extractJsonFromAppJs(target) {
       if (ch === "{") depth++;
       else if (ch === "}") depth--;
       if (depth === 0 && ptr > start) {
-        const jsonText = target.substring(start, ptr + 1);
+        const jsonText = "{" + target.substring(start, ptr + 1);
         try {
           return JSON.parse(jsonText);
         } catch {
