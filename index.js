@@ -104,22 +104,29 @@ async function handleRequest(request) {
           // If extracted is an object, return it directly; if string, it's a filename
           // For embedded JSON, keep type 'icc'
           const isExtracted = typeof extracted === "object";
-
-          const respType = isExtracted ? "icc" : "icc_link";
-
           console.log(
             `[4] Type of extracted: ${typeof extracted} - ${
               isExtracted ? "1" : "0"
             }`
           );
 
-          return jsonResponse({
-            type: respType,
-            html_path: htmlIndex,
-            project: (isExtracted ? "" : folder) + JSON.stringify(extracted),
-            folder_path: folder,
-            message: "Extracted project from app.js",
-          });
+          if (!isExtracted) {
+            return jsonResponse({
+              type: "icc_link",
+              html_path: htmlIndex,
+              project: `${folder}${extracted}`,
+              folder_path: folder,
+            });
+          } else {
+            // If extracted is an object, return it as JSON
+            return jsonResponse({
+              type: "icc",
+              html_path: htmlIndex,
+              project: extracted,
+              folder_path: folder,
+              message: "Extracted project from app.js",
+            });
+          }
         }
 
         // Case 4a: bundle mentions 'project.json' → 404
