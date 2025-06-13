@@ -52,32 +52,39 @@ async function handleRequest(request) {
     console.log("[2] Checking for HTML candidate:", trimmed);
 
     htmlCandidate = `${trimmed}.html`;
-    let htmlRes = await fetch(new URL(htmlCandidate, request.url), {
-      method: "HEAD",
-    });
-    if (htmlRes.ok) {
-      console.log("[2] Found HTML candidate:", htmlCandidate);
 
-      // Update folder and htmlIndex
-      const segments = trimmed.split("/");
-      segments.pop();
-      folder = segments.length ? segments.join("/") + "/" : "";
-      htmlIndex = htmlCandidate;
+    console.log("[2] Checking HTML candidate:", htmlCandidate);
+    try {
+      let htmlRes = await fetch(new URL(htmlCandidate, request.url), {
+        method: "HEAD",
+      });
+      if (htmlRes.ok) {
+        console.log("[2] Found HTML candidate:", htmlCandidate);
 
-      // Check existence of updated folder/project.json via HEAD
-      let projHead = await fetch(
-        new URL(`${folder}project.json`, request.url),
-        { method: "HEAD" }
-      );
-      if (projHead.ok) {
-        console.log("[2] Found project.json in folder:", folder);
-        return jsonResponse({
-          type: "icc_link",
-          html_path: htmlIndex,
-          project: `${folder}project.json`,
-          folder_path: folder,
-        });
+        // Update folder and htmlIndex
+        const segments = trimmed.split("/");
+        segments.pop();
+        folder = segments.length ? segments.join("/") + "/" : "";
+        htmlIndex = htmlCandidate;
+
+        // Check existence of updated folder/project.json via HEAD
+        let projHead = await fetch(
+          new URL(`${folder}project.json`, request.url),
+          { method: "HEAD" }
+        );
+        if (projHead.ok) {
+          console.log("[2] Found project.json in folder:", folder);
+          return jsonResponse({
+            type: "icc_link",
+            html_path: htmlIndex,
+            project: `${folder}project.json`,
+            folder_path: folder,
+          });
+        }
       }
+    } catch (error) {
+      // pass
+      console.error("[2] Error checking HTML candidate:", error);
     }
   }
 
