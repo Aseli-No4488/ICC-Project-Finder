@@ -55,10 +55,13 @@ async function handleRequest(request) {
 
     console.log("[2] Checking HTML candidate:", htmlCandidate);
     try {
-      let htmlRes = await fetch(new URL(htmlCandidate, request.url), {
+      let htmlRes = await fetch(new URL(`${trimmed}/index.html`, request.url), {
         method: "HEAD",
       });
-      if (htmlRes.ok) {
+
+      console.log("[2] HTML candidate response:", htmlRes.status);
+
+      if (htmlRes.status == 404) {
         console.log("[2] Found HTML candidate:", htmlCandidate);
 
         // Update folder and htmlIndex
@@ -100,7 +103,9 @@ async function handleRequest(request) {
       const jsFilename = m[0];
       const jsPath = `${folder}js/${jsFilename}`;
       const jsRes = await fetch(new URL(jsPath, request.url));
+      console.log("[4] Fetching app.js from:", jsPath);
       if (jsRes.ok) {
+        console.log("[4] Found app.js at:", jsPath);
         const jsText = await jsRes.text();
 
         // Case 3: try extracting JSON or JSON path from JS
